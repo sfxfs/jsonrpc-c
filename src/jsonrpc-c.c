@@ -147,13 +147,11 @@ static cJSON *eval_batch_request(struct jrpc_server *server, cJSON *root)
 		return send_error(JRPC_INVALID_REQUEST,
 				strdup("Valid request received: Empty JSON array."), NULL);
 
-	cJSON *return_json_array = cJSON_CreateArray();
+	cJSON *ret_json = cJSON_CreateArray();
 	for (int i = 0; i < array_size; i++)
-	{
-		cJSON_AddItemToArray(return_json_array, eval_request(server, cJSON_GetArrayItem(root, i)));
-	}
+		cJSON_AddItemToArray(ret_json, eval_request(server, cJSON_GetArrayItem(root, i)));
 
-	return return_json_array;
+	return ret_json;
 }
 
 static void close_connection(struct ev_loop *loop, ev_io *w) {
@@ -212,8 +210,7 @@ static void connection_cb(struct ev_loop *loop, ev_io *w, int revents) {
 			}
 			if (ret_json != NULL) {
 				char *ret_str = cJSON_PrintUnformatted(ret_json);
-				if (ret_str)
-				{
+				if (ret_str) {
 					send_response(conn, ret_str);
 					free(ret_str);
 				}
@@ -239,11 +236,9 @@ static void connection_cb(struct ev_loop *loop, ev_io *w, int revents) {
 						strdup(
 								"Parse error. Invalid JSON was received by the server."),
 						NULL);
-				if (ret_json != NULL)
-				{
+				if (ret_json != NULL) {
 					char *ret_str = cJSON_PrintUnformatted(ret_json);
-					if (ret_str)
-					{
+					if (ret_str) {
 						send_response(conn, ret_str);
 						free(ret_str);
 					}
